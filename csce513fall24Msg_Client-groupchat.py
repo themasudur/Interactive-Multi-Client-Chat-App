@@ -5,19 +5,6 @@ import select
 import sys
 import os
 
-from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
-from cryptography.hazmat.primitives import padding
-
-# Define a shared key (must be 32 bytes for AES-256)
-<<<<<<< HEAD
-SHARED_KEY = b"thisisaverysecurekey123456789012"  # Example 32-byte key
-=======
-SHARED_KEY = b"thisisaverysecurekey123456789012"  # Example 32-byte key (do not share this publicly)
->>>>>>> 7175864c62c067fa11f6df0b8b5724f68c74c233
-IV = b"1234567890123456"  # Initialization vector (must be 16 bytes)
-
-
-
 HOST = '127.0.0.1'
 PORT = 5555
 
@@ -40,7 +27,7 @@ class GroupChatWindow(QtWidgets.QWidget):
         self.setGeometry(100, 100, 300, 400)
         self.setWindowFlags(QtCore.Qt.Window | QtCore.Qt.WindowCloseButtonHint | QtCore.Qt.CustomizeWindowHint)
         self.setWindowIcon(QtGui.QIcon("icons/group.png"))
-        
+
         # Create widgets
         self.member_input = QtWidgets.QLineEdit(self)
         self.member_input.setPlaceholderText("Enter member name...")
@@ -52,7 +39,7 @@ class GroupChatWindow(QtWidgets.QWidget):
         self.member_list_label = QtWidgets.QLabel("Group Members")
         self.member_list = QtWidgets.QListWidget(self)
         
-        
+  
         self.chat_label = QtWidgets.QLabel("Group Conversation")
         self.group_chat_area = QtWidgets.QTextEdit(self)
         self.group_chat_area.setReadOnly(True)
@@ -78,6 +65,7 @@ class GroupChatWindow(QtWidgets.QWidget):
         
         self.setLayout(main_layout)
 
+        
     def add_member(self):
         """Add a new member to the group."""
         member_name = self.member_input.text().strip()
@@ -128,7 +116,7 @@ class Client(QtWidgets.QWidget):
         # Set window icon
         self.setWindowIcon(QtGui.QIcon("icons/client.png"))  # Replace with your client icon file path
 
-        # Prompt for the username
+        
         flags = QtCore.Qt.Dialog | QtCore.Qt.CustomizeWindowHint | QtCore.Qt.WindowTitleHint
         self.name, ok = QtWidgets.QInputDialog.getText(
             self, 
@@ -188,7 +176,6 @@ class Client(QtWidgets.QWidget):
 
         self.show()
 
-
     def connect_to_server(self):
         try:
             self.client_socket.connect((HOST, PORT))
@@ -199,85 +186,19 @@ class Client(QtWidgets.QWidget):
             QtWidgets.QMessageBox.critical(self, "Connection Error", f"Could not connect to server: {e}")
             sys.exit()
 
-    def encrypt_message(self, message):
-        """Encrypt a message using AES."""
-        # Pad the message to match block size
-        padder = padding.PKCS7(128).padder()
-        padded_data = padder.update(message.encode()) + padder.finalize()
-    
-        # Encrypt the padded message
-        cipher = Cipher(algorithms.AES(SHARED_KEY), modes.CBC(IV))
-        encryptor = cipher.encryptor()
-        encrypted_message = encryptor.update(padded_data) + encryptor.finalize()
-        return encrypted_message
-    
-    def decrypt_message(self, encrypted_message):
-        """Decrypt a message using AES."""
-        # Decrypt the message
-        cipher = Cipher(algorithms.AES(SHARED_KEY), modes.CBC(IV))
-        decryptor = cipher.decryptor()
-        decrypted_data = decryptor.update(encrypted_message) + decryptor.finalize()
-    
-        # Remove padding
-        unpadder = padding.PKCS7(128).unpadder()
-        decrypted_message = unpadder.update(decrypted_data) + unpadder.finalize()
-        return decrypted_message.decode()
 
 
     def receive_messages(self):
-        """Receive and decrypt messages from the server."""
+        """Receive messages and handle them appropriately."""
         while True:
             try:
                 read_sockets, _, _ = select.select([self.client_socket], [], [], 0.1)
                 if self.client_socket in read_sockets:
-<<<<<<< HEAD
-                    message = self.client_socket.recv(1024)
-                    
-                    if message:
-                        # Split the sender name and encrypted message
-                        sender_end_idx = message.find(b"] ") + 2  # Find the end of the sender name
-                        sender_name = message[:sender_end_idx].decode()  # Extract sender name (e.g., "[Sender] ")
-                        encrypted_message = message[sender_end_idx:]  # Extract encrypted content
-        
-                        # Decrypt the encrypted part
-                        decrypted_message = self.decrypt_message(encrypted_message)
-
-                        # Handle group messages
-                        if decrypted_message.startswith("&"):
-                            group_name, sender_name, group_msg = decrypted_message[1:].split(" ", 2)
-                            if group_name in self.group_windows:
-                                self.group_windows[group_name].display_group_message(f"[{sender_name}]: {group_msg}", "purple")
-                                self.chat_area.setTextColor(QtGui.QColor("purple"))
-                                self.chat_area.append(f"[{group_name}]: {group_msg}")
-                            else:
-                                # Display in main chat if group is not open
-                                self.chat_area.setTextColor(QtGui.QColor("purple"))
-                                self.chat_area.append(f"[{group_name}]: {group_msg}")
-    
-                        elif decrypted_message.startswith("@"):
-                            print(decrypted_message)
-                            receipent_name, msg = decrypted_message.split(" ")
-                            self.chat_area.setTextColor(QtGui.QColor("green"))
-                            self.chat_area.append(f"[sender_name] to {receipent_name}]: {msg}.")
-                        
-                        elif decrypted_message.startswith("[GroupNotification]"):
-                            _, group_name, member_name = decrypted_message.split(":")
-                            self.chat_area.setTextColor(QtGui.QColor("green"))
-                            self.chat_area.append(f"[Server] {member_name} was added to group {group_name}.")
-    
-                        else:
-                            self.chat_area.setTextColor(QtGui.QColor("black"))
-                            self.chat_area.append(f"{sender_name}: {decrypted_message}")
-=======
-                    encrypted_message = self.client_socket.recv(1024).decode()
-                    
-                    if encrypted_message:
-                        # Decrypt the message
-                        decrypted_message = self.decrypt_message(encrypted_message)
+                    message = self.client_socket.recv(1024).decode()
 
                     # Handle group messages
-                    if decrypted_message.startswith("&"):
-                        group_name, group_msg = decrypted_message[1:].split(":", 1)
+                    if message.startswith("&"):
+                        group_name, group_msg = message[1:].split(":", 1)
 
                         if group_name in self.group_windows:
                             self.group_windows[group_name].display_group_message(group_msg)
@@ -287,54 +208,35 @@ class Client(QtWidgets.QWidget):
                             self.chat_area.append(f"[{group_name}]: {group_msg}")
 
                     # Handle notifications
-                    elif decrypted_message.startswith("[GroupNotification]"):
-                        _, group_name, member_name = decrypted_message.split(":")
+                    elif message.startswith("[GroupNotification]"):
+                        _, group_name, member_name = message.split(":")
                         self.chat_area.setTextColor(QtGui.QColor("green"))
                         self.chat_area.append(f"[Server] {member_name} was added to group {group_name}.")
 
                     else:
                         self.chat_area.setTextColor(QtGui.QColor("black"))
-                        self.chat_area.append(decrypted_message)
->>>>>>> 7175864c62c067fa11f6df0b8b5724f68c74c233
+                        self.chat_area.append(message)
             except Exception as e:
                 self.chat_area.append(f"Error: {e}")
                 break
 
-
-
-
-
     def send_message(self):
-        """Send an encrypted message to the server."""
+        """Send a message to the server."""
         message = self.message_entry.text().strip()
-        if not message:
-            return
-        
+        if message:
+            try:
+                self.client_socket.sendall(message.encode())
 
-        try:
-            # Encrypt the message
-            encrypted_message = self.encrypt_message(message)
-            
-            #print(encrypted_message)
-            #print(self.decrypt_message(encrypted_message))
-            
-            
-            self.client_socket.sendall(encrypted_message)
+                if message.startswith("&"):
+                    self.chat_area.setTextColor(QtGui.QColor("purple"))
+                    self.chat_area.append(f"[Me]: {message}")
+                else:
+                    self.chat_area.setTextColor(QtGui.QColor("blue"))
+                    self.chat_area.append(f"You: {message}")
 
-            if message.startswith("&"):
-                self.chat_area.setTextColor(QtGui.QColor("purple"))
-                self.chat_area.append(f"[Me]: {message}")
-            else:
-                self.chat_area.setTextColor(QtGui.QColor("blue"))
-                self.chat_area.append(f"You: {message}")
-            self.message_entry.clear()
-        except Exception as e:
-            self.chat_area.append(f"Error sending message: {e}")
-
-
-
-
-
+                self.message_entry.clear()
+            except Exception as e:
+                self.chat_area.append(f"Error sending message: {e}")
 
     def send_file(self):
         """Send a file to another client."""
