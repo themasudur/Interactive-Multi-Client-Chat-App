@@ -1,9 +1,3 @@
-<<<<<<< HEAD
-# Interactive-Multi-Client-Chat-App
-Interactive-Multi-Client-Chat-App. This app is designed as a course project for CSCE 513 Networks at UL lafayette.
-=======
-Interactive-Multi-Client-Chat-App
-
 ## Interactive Multi-client Chat System using Socket in Python
 
 ## Problem Statement:
